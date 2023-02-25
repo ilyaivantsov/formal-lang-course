@@ -1,0 +1,23 @@
+import cfpq_data
+import networkx as nx
+from collections import namedtuple
+
+GraphInfo = namedtuple('GraphInfo', ['nodes_count', 'edges_count', 'labels_set'])
+
+
+def load_graph(gn: str) -> nx.MultiDiGraph:
+    return cfpq_data.graph_from_csv(cfpq_data.download(gn))
+
+
+def save_graph(graph: nx.MultiDiGraph, path: str):
+    nx.drawing.nx_pydot.write_dot(graph, path)
+
+
+def graph_info(graph: nx.MultiDiGraph) -> GraphInfo:
+    return GraphInfo(graph.number_of_nodes(),
+                     graph.number_of_edges(),
+                     set([d['label'] for _, _, d in graph.edges(data=True)]))
+
+
+def create_two_cycles_graph(n: int, m: int, labels: tuple = ('a', 'b')) -> nx.MultiDiGraph:
+    return cfpq_data.labeled_two_cycles_graph(n, m, labels=labels)
