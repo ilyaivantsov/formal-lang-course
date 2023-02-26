@@ -5,8 +5,8 @@ from collections import namedtuple
 GraphInfo = namedtuple('GraphInfo', ['nodes_count', 'edges_count', 'labels_set'])
 
 
-def load_graph(gn: str) -> nx.MultiDiGraph:
-    return cfpq_data.graph_from_csv(cfpq_data.download(gn))
+def load_graph(name: str) -> nx.MultiDiGraph:
+    return cfpq_data.graph_from_csv(cfpq_data.download(name))
 
 
 def save_graph(graph: nx.MultiDiGraph, path: str):
@@ -21,3 +21,11 @@ def graph_info(graph: nx.MultiDiGraph) -> GraphInfo:
 
 def create_two_cycles_graph(n: int, m: int, labels: tuple = ('a', 'b')) -> nx.MultiDiGraph:
     return cfpq_data.labeled_two_cycles_graph(n, m, labels=labels)
+
+
+def create_and_save_two_cycles_graph(path: str, n: int, m: int, labels: tuple = ('a', 'b')):
+    save_graph(graph=create_two_cycles_graph(n=n, m=m, labels=labels), path=path)
+
+
+def get_graph_info_by_name(name: str) -> GraphInfo:
+    return graph_info(load_graph(name=name))
