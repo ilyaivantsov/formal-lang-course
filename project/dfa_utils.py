@@ -10,7 +10,7 @@ def regex2dfa(expr: str) -> DeterministicFiniteAutomaton:
 
 
 def graph2nfa(
-        graph: nx.MultiDiGraph, starts, finals
+    graph: nx.MultiDiGraph, starts, finals
 ) -> NondeterministicFiniteAutomaton:
     nfa = NondeterministicFiniteAutomaton()
     nfa.add_transitions([(v, d["label"], u) for v, u, d in graph.edges(data=True)])

@@ -18,6 +18,6 @@ def test_1():
 
 
 def test_2():
-    nfa = graph2nfa(create_two_cycles_graph(3, 3, ('1', '0')), [0], [0])
+    nfa = graph2nfa(create_two_cycles_graph(3, 3, ("1", "0")), [0], [0])
     dfa = regex2dfa("(1 1 1 1|0 0 0 0)*")
     assert dfa.is_equivalent_to(nfa)
