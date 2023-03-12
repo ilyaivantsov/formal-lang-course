@@ -77,7 +77,7 @@ def query(
     graph: nx.MultiDiGraph,
     start_states,
     final_states,
-) -> set[tuple[any, any]]:
+) -> set[tuple[State, State]]:
     g1 = regex2dfa(regex)
     g2 = graph2nfa(graph, start_states, final_states)
     result = nfa_intersect(g1, g2)
