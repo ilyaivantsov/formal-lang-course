@@ -80,10 +80,10 @@ def query(
 ) -> set[tuple[State, State]]:
     g1 = regex2dfa(regex)
     g2 = graph2nfa(graph, start_states, final_states)
-    result = nfa_intersect(g1, g2)
+    result_i = nfa_intersect(g1, g2)
 
     state_to_inx, matrices, start_states_r, final_states_r = nfa_to_bool_matrices(
-        result
+        result_i
     )
 
     c_matrix = dok_matrix((len(state_to_inx), len(state_to_inx)), dtype=np.bool_)
