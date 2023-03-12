@@ -15,7 +15,9 @@ def regex2dfa(expr: str) -> DeterministicFiniteAutomaton:
 
 
 def graph2nfa(
-        graph: nx.MultiDiGraph, starts: Iterable[any] = None, finals: Iterable[any] = None,
+    graph: nx.MultiDiGraph,
+    starts: Iterable[any] = None,
+    finals: Iterable[any] = None,
 ) -> NondeterministicFiniteAutomaton:
     nfa = NondeterministicFiniteAutomaton()
     nfa.add_transitions([(v, d["label"], u) for v, u, d in graph.edges(data=True)])
@@ -28,7 +30,7 @@ def graph2nfa(
 
 
 def nfa_to_bool_matrices(
-        nfa: EpsilonNFA,
+    nfa: EpsilonNFA,
 ) -> Tuple[Dict[State, int], Dict[any, dok_matrix], Iterable[any], Iterable[any]]:
     state_to_inx = {k: i for i, k in enumerate(nfa.states)}
     n_states = len(nfa.states)
@@ -40,17 +42,13 @@ def nfa_to_bool_matrices(
     return state_to_inx, result, nfa.start_states, nfa.final_states
 
 
-def nfa_intersect(
-        nfa1: EpsilonNFA, nfa2: EpsilonNFA
-) -> EpsilonNFA:
+def nfa_intersect(nfa1: EpsilonNFA, nfa2: EpsilonNFA) -> EpsilonNFA:
     nfa1_state_to_inx, nfa1_matrices, ss1, fs1 = nfa_to_bool_matrices(nfa1)
     nfa2_state_to_inx, nfa2_matrices, ss2, fs2 = nfa_to_bool_matrices(nfa2)
 
     result = EpsilonNFA()
     symbols = set.intersection(set(nfa1_matrices.keys()), set(nfa2_matrices.keys()))
-    result_matrices = {
-        s: kron(nfa1_matrices[s], nfa1_matrices[s]) for s in symbols
-    }
+    result_matrices = {s: kron(nfa1_matrices[s], nfa1_matrices[s]) for s in symbols}
 
     for s, matrix in result_matrices.items():
         from_idx, to_idx = matrix.nonzero()
@@ -59,28 +57,34 @@ def nfa_intersect(
 
     for s1 in ss1:
         for s2 in ss2:
-            state = State(nfa1_state_to_inx[s1] * len(nfa2_state_to_inx) + nfa2_state_to_inx[s2])
+            state = State(
+                nfa1_state_to_inx[s1] * len(nfa2_state_to_inx) + nfa2_state_to_inx[s2]
+            )
             result.add_start_state(state)
 
     for f1 in fs1:
         for f2 in fs2:
-            state = State(nfa1_state_to_inx[f1] * len(nfa2_state_to_inx) + nfa2_state_to_inx[f2])
+            state = State(
+                nfa1_state_to_inx[f1] * len(nfa2_state_to_inx) + nfa2_state_to_inx[f2]
+            )
             result.add_final_state(state)
 
     return result
 
 
 def query(
-        regex: str,
-        graph: nx.MultiDiGraph,
-        start_states,
-        final_states,
+    regex: str,
+    graph: nx.MultiDiGraph,
+    start_states,
+    final_states,
 ) -> set[tuple[any, any]]:
     g1 = regex2dfa(regex)
     g2 = graph2nfa(graph, start_states, final_states)
     result = nfa_intersect(g1, g2)
 
-    state_to_inx, matrices, start_states_r, final_states_r = nfa_to_bool_matrices(result)
+    state_to_inx, matrices, start_states_r, final_states_r = nfa_to_bool_matrices(
+        result
+    )
 
     c_matrix = dok_matrix((len(state_to_inx), len(state_to_inx)), dtype=np.bool_)
     for matrix in matrices.values():
@@ -101,6 +105,11 @@ def query(
     for fro, to in zip(from_idx, to_idx):
         fro_id, to_id = mapping[fro], mapping[to]
         if fro_id in start_states_r and to_id in final_states_r:
-            result.add((states_list[fro_id.value % n_states], states_list[to_id.value % n_states]))
+            result.add(
+                (
+                    states_list[fro_id.value % n_states],
+                    states_list[to_id.value % n_states],
+                )
+            )
 
     return result
