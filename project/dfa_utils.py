@@ -10,6 +10,11 @@ import numpy as np
 
 
 def regex2dfa(expr: str) -> DeterministicFiniteAutomaton:
+    """Return minimized DFA from regular expression string
+
+    Keyword arguments:
+    expr -- academic regular expression string;
+    """
     dfa = Regex(expr).to_epsilon_nfa()
     return dfa.minimize()
 
@@ -19,6 +24,13 @@ def graph2nfa(
     starts: Iterable[any] = None,
     finals: Iterable[any] = None,
 ) -> NondeterministicFiniteAutomaton:
+    """Return nondeterministic finite automaton from :class:`nx.MultiDiGraph` graph
+
+    Keyword arguments:
+    graph -- source graph;
+    starts -- `graph's` nodes marked as starts;
+    finals -- `graph's` nodes marked as finals;
+    """
     nfa = NondeterministicFiniteAutomaton()
     nfa.add_transitions([(v, d["label"], u) for v, u, d in graph.edges(data=True)])
 
@@ -32,6 +44,11 @@ def graph2nfa(
 def nfa_to_bool_matrices(
     nfa: EpsilonNFA,
 ) -> Tuple[Dict[State, int], Dict[any, dok_matrix], Iterable[any], Iterable[any]]:
+    """Convert finite automaton :class:`EpsilonNFA` to the transition matrix dictionary
+
+    Keyword arguments:
+    nfa -- source graph;
+    """
     state_to_inx = {k: i for i, k in enumerate(nfa.states)}
     n_states = len(nfa.states)
     result = dict()
@@ -43,6 +60,7 @@ def nfa_to_bool_matrices(
 
 
 def nfa_intersect(nfa1: EpsilonNFA, nfa2: EpsilonNFA) -> EpsilonNFA:
+    """Intersection of two finite automatons"""
     nfa1_state_to_inx, nfa1_matrices, ss1, fs1 = nfa_to_bool_matrices(nfa1)
     nfa2_state_to_inx, nfa2_matrices, ss2, fs2 = nfa_to_bool_matrices(nfa2)
 
@@ -78,6 +96,8 @@ def query(
     start_states,
     final_states,
 ) -> set[Tuple[State, State]]:
+    """Finds all pairs of start and end states such that the end state is reachable from the start state
+    with the restrictions specified in the regular expression."""
     g1 = regex2dfa(regex)
     g2 = graph2nfa(graph, start_states, final_states)
     result_i = nfa_intersect(g1, g2)
