@@ -6,6 +6,7 @@ GraphInfo = namedtuple("GraphInfo", ["nodes_count", "edges_count", "labels_set"]
 
 
 def load_graph(name: str) -> nx.MultiDiGraph:
+    """Loads graph by name."""
     return cfpq_data.graph_from_csv(cfpq_data.download(name))
 
 
@@ -14,6 +15,7 @@ def save_graph(graph: nx.MultiDiGraph, path: str):
 
 
 def graph_info(graph: nx.MultiDiGraph) -> GraphInfo:
+    """Returns summary about graph :class:`nx.MultiDiGraph`"""
     return GraphInfo(
         graph.number_of_nodes(),
         graph.number_of_edges(),
