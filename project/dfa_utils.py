@@ -20,9 +20,9 @@ def regex2dfa(expr: str) -> DeterministicFiniteAutomaton:
 
 
 def graph2nfa(
-        graph: nx.MultiDiGraph,
-        starts: Iterable[Any] = None,
-        finals: Iterable[Any] = None,
+    graph: nx.MultiDiGraph,
+    starts: Iterable[Any] = None,
+    finals: Iterable[Any] = None,
 ) -> NondeterministicFiniteAutomaton:
     """Return nondeterministic finite automaton from :class:`nx.MultiDiGraph` graph
 
@@ -42,7 +42,7 @@ def graph2nfa(
 
 
 def nfa_to_bool_matrices(
-        nfa: EpsilonNFA,
+    nfa: EpsilonNFA,
 ) -> Tuple[Dict[State, int], Dict[Any, dok_matrix], Iterable[Any], Iterable[Any]]:
     """Convert finite automaton :class:`EpsilonNFA` to the transition matrix dictionary
 
@@ -91,10 +91,10 @@ def nfa_intersect(nfa1: EpsilonNFA, nfa2: EpsilonNFA) -> EpsilonNFA:
 
 
 def query(
-        regex: str,
-        graph: nx.MultiDiGraph,
-        start_states,
-        final_states,
+    regex: str,
+    graph: nx.MultiDiGraph,
+    start_states,
+    final_states,
 ) -> Set[Tuple[State, State]]:
     """Finds all pairs of start and end states such that the end state is reachable from the start state
     with the restrictions specified in the regular expression."""
@@ -136,12 +136,12 @@ def query(
 
 
 def BFSBasedRPQ_util(
-        regex_dfa: DeterministicFiniteAutomaton,
-        regex_idx: Dict[Any, int],
-        n_graph: int,
-        node_names: Dict[int, Any],
-        transitions: Dict,
-        starts: Iterable[int],
+    regex_dfa: DeterministicFiniteAutomaton,
+    regex_idx: Dict[Any, int],
+    n_graph: int,
+    node_names: Dict[int, Any],
+    transitions: Dict,
+    starts: Iterable[int],
 ) -> Set:
     """
     Find nodes in graph, accessible from at least one of the selected starting nodes.
@@ -179,13 +179,15 @@ def BFSBasedRPQ_util(
     return result
 
 
-def BFSBasedRPQ_type(regex: str, graph: nx.MultiDiGraph, starts: Iterable, type=True) -> Set | Dict:
+def BFSBasedRPQ_type(
+    regex: str, graph: nx.MultiDiGraph, starts: Iterable, type=True
+) -> Set | Dict:
     """
-     Find nodes in graph, accessible from nodes depending on the type.
-     Returns
-     -------
-     Set or Dict of accessible nodes
-     """
+    Find nodes in graph, accessible from nodes depending on the type.
+    Returns
+    -------
+    Set or Dict of accessible nodes
+    """
     regex_dfa = regex2dfa(regex)
     regex_idx, regex_mat, _, _ = nfa_to_bool_matrices(regex_dfa)
     graph_idx, graph_mat, _, _ = nfa_to_bool_matrices(graph2nfa(graph, starts, starts))
@@ -216,8 +218,13 @@ def BFSBasedRPQ_type(regex: str, graph: nx.MultiDiGraph, starts: Iterable, type=
         return result
 
 
-def query_bfs(regex: str, graph: nx.MultiDiGraph, starts: Iterable, finals: Iterable, type=True) -> Set | Dict:
+def query_bfs(
+    regex: str, graph: nx.MultiDiGraph, starts: Iterable, finals: Iterable, type=True
+) -> Set | Dict:
     if type:
         return BFSBasedRPQ_type(regex, graph, starts, type).intersection(set(finals))
     else:
-        return {k: v.intersection(set(finals)) for k, v in BFSBasedRPQ_type(regex, graph, starts, type).items()}
+        return {
+            k: v.intersection(set(finals))
+            for k, v in BFSBasedRPQ_type(regex, graph, starts, type).items()
+        }
