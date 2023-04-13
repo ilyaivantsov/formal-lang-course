@@ -42,11 +42,11 @@ class ECFG:
     """
 
     def __init__(
-            self,
-            variables: AbstractSet[Variable] = None,
-            terminals: AbstractSet[Terminal] = None,
-            start_symbol: Variable = None,
-            productions: Dict[Variable, Regex] = None,
+        self,
+        variables: AbstractSet[Variable] = None,
+        terminals: AbstractSet[Terminal] = None,
+        start_symbol: Variable = None,
+        productions: Dict[Variable, Regex] = None,
     ):
         self.variables = variables or set()
         self.terminals = terminals or set()
