@@ -28,13 +28,13 @@ def graph_info(graph: nx.MultiDiGraph) -> GraphInfo:
 
 
 def create_two_cycles_graph(
-        n: int, m: int, labels: tuple = ("a", "b")
+    n: int, m: int, labels: tuple = ("a", "b")
 ) -> nx.MultiDiGraph:
     return cfpq_data.labeled_two_cycles_graph(n, m, labels=labels)
 
 
 def create_and_save_two_cycles_graph(
-        path: str, n: int, m: int, labels: tuple = ("a", "b")
+    path: str, n: int, m: int, labels: tuple = ("a", "b")
 ):
     save_graph(graph=create_two_cycles_graph(n=n, m=m, labels=labels), path=path)
 
@@ -45,7 +45,7 @@ def get_graph_info_by_name(name: str) -> GraphInfo:
 
 def hellings_cfpq(cfg: CFG, graph: nx.MultiDiGraph) -> Set[Tuple]:
     """
-   Hellings' algorithm
+    Hellings' algorithm
     """
     cfg = cfg_to_whnf(cfg)
 
@@ -84,7 +84,7 @@ def hellings_cfpq(cfg: CFG, graph: nx.MultiDiGraph) -> Set[Tuple]:
 
 
 def query_cfg_graph(
-        cfg: CFG, graph: nx.MultiDiGraph, S: Variable, starts: Iterable, finals: Iterable
+    cfg: CFG, graph: nx.MultiDiGraph, S: Variable, starts: Iterable, finals: Iterable
 ) -> Dict[Any, Set]:
     """
     Query graph representing a finite automaton with a context-free grammar
