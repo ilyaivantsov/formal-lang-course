@@ -154,3 +154,17 @@ def apply_matrix_alg(cfg: CFG, graph: nx.MultiDiGraph) -> Set[Tuple]:
         for i in range(len(xs)):
             result.add((nodes[xs[i]], var, nodes[ys[i]]))
     return result
+
+
+def apply_matrix_text(cfg: str, graph: nx.MultiDiGraph) -> Set[Tuple]:
+    """
+    Apply matrix algorithm to a graph
+    """
+    return apply_matrix_alg(CFG.from_text(cfg), graph)
+
+
+def apply_matrix_text_dot(cfg: str, dot_path: str) -> Set[Tuple]:
+    """
+    Apply matrix algorithm to a graph
+    """
+    return apply_matrix_alg(CFG.from_text(cfg), nx.nx_pydot.read_dot(dot_path))
