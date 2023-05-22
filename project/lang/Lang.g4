@@ -1,4 +1,4 @@
-//antlr4  Expr.g4 -Dlanguage=Python3 -visitor -o dist
+//antlr4  Lang.g4 -Dlanguage=Python3 -visitor -o dist
 grammar Lang;
 
 program: (statements+=statement ';')* EOF;
@@ -8,7 +8,7 @@ statement: bind | print;
 bind: pattern ':=' expr # BindStatement;
 print: 'print' expr     # PrintStatement;
 
-lambda: pattern '=>' expr;
+lambda: pat=pattern '=>' body=expr;
 pattern: var | '(' pattern (',' pattern)* ')';
 
 var: IDENT;
@@ -22,12 +22,12 @@ expr:
 	'(' expr ')'                                                        # ParenExpr
 	| var                                                               # VarExpr
 	| val                                                               # ValExpr
-    | ('map'|'filter') expr 'by' lambda                                 # MapOrFilterExpr
+    | ('map'|'filter') expr 'by' lam=lambda                             # MapOrFilterExpr
     | 'load' expr                                                       # LoadExpr
 	| expr '&' expr                                                     # IntersectionExpr
 	| expr '|' expr                                                     # JoinExpr
 	| expr '++' expr                                                    # ConcatExpr
-	| expr '*'                                                          # СlosurExpr
+	| expr '*'                                                          # ClosurExpr
 	| ('starts'| 'finals' | 'labels' | 'edges') 'of' expr               # InfoExpr
     ;
 
