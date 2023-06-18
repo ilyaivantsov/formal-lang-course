@@ -67,10 +67,6 @@ class InterpretVisitor(LangVisitor):
     def visitLambda(self, ctx: LangParser.LambdaContext):
         return self.visitChildren(ctx)
 
-    # Visit a parse tree produced by LangParser#pattern.
-    def visitPattern(self, ctx: LangParser.PatternContext):
-        return self.visitChildren(ctx)
-
     @log
     def visitVar(self, ctx: LangParser.VarContext):
         key: str = ctx.getText()
@@ -159,7 +155,7 @@ class InterpretVisitor(LangVisitor):
 
     # Visit a parse tree produced by LangParser#ParenExpr.
     def visitParenExpr(self, ctx: LangParser.ParenExprContext):
-        return self.visitChildren(ctx)
+        return ctx.expr().accept(self)
 
     @_stack_deco
     def visitInfoExpr(self, ctx: LangParser.InfoExprContext):
@@ -180,6 +176,37 @@ class InterpretVisitor(LangVisitor):
                 return Entity(set(graph))
             case _:
                 raise Exception(f"Unexpected operator {op}")
+
+    @_stack_deco
+    def visitModifyExpr(self, ctx: LangParser.ModifyExprContext):
+        op: str = str(ctx.children[0])
+        entity_1: Entity = ctx.expr()[0].accept(self)
+        entity_2: Entity = ctx.expr()[1].accept(self)
+
+        if not isinstance(entity_1.get_val(), set) or not isinstance(entity_2.get_val(), EpsilonNFA):
+            raise Exception(f"Invalid operands")
+
+        nodes: set = entity_1.get_val()
+        graph: EpsilonNFA = entity_2.get_val().copy()
+
+        match op:
+            case 'set final':
+                graph.final_states.clear()
+                graph.final_states.update(nodes)
+                return Entity(graph)
+            case 'add final':
+                graph.final_states.update(nodes)
+                return Entity(graph)
+            case 'set start':
+                graph.start_states.clear()
+                graph.start_states.update(nodes)
+                return Entity(graph)
+            case 'add start':
+                graph.start_states.update(nodes)
+                return Entity(graph)
+            case _:
+                raise Exception(f"Unexpected operator {op}")
+
 
     @log
     @_stack_deco
@@ -207,4 +234,4 @@ def run_visitor(code, out=None):
 
 
 if __name__ == '__main__':
-    run_visitor('print(labels of load "bzip");')
+    run_visitor('g := load "bzip"; h := set start {1,2,3} to g; print(finals of (set final {4,5} to h)));')

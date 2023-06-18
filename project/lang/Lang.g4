@@ -8,10 +8,7 @@ statement: bind | print;
 bind: var ':=' expr             # BindStatement;
 print: 'print' '(' expr ')'     # PrintStatement;
 
-lambda: pat=pattern '=>' body=expr;
-pattern: var                                # PatternVar
-        | '(' pattern (',' pattern)* ')'    # PatternVars
-        ;
+lambda: var '=>' body=expr;
 
 var: IDENT;
 val:
@@ -30,16 +27,17 @@ setElem: INT                           # FillSetInt
          ;
 
 expr:
-	'(' expr ')'                                                        # ParenExpr
-	| var                                                               # VarExpr
-	| val                                                               # ValExpr
-    | ('map'|'filter') expr 'by' lam=lambda                             # MapOrFilterExpr
-    | 'load' expr                                                       # LoadExpr
-	| expr '&' expr                                                     # IntersectionExpr
-	| expr '|' expr                                                     # JoinExpr
-	| expr '++' expr                                                    # ConcatExpr
-	| expr '*'                                                          # ClosurExpr
-	| ('starts'| 'finals' | 'labels' | 'edges') 'of' expr               # InfoExpr
+	'(' expr ')'                                                                 # ParenExpr
+	| var                                                                        # VarExpr
+	| val                                                                        # ValExpr
+    | ('map'|'filter') expr 'by' lam=lambda                                      # MapOrFilterExpr
+    | 'load' expr                                                                # LoadExpr
+	| expr '&' expr                                                              # IntersectionExpr
+	| expr '|' expr                                                              # JoinExpr
+	| expr '++' expr                                                             # ConcatExpr
+	| expr '*'                                                                   # ClosurExpr
+	| ('starts' | 'finals' | 'labels' | 'edges') 'of' expr                       # InfoExpr
+	| ('set final' | 'add final' | 'set start' | 'add start') expr 'to' expr     # ModifyExpr
     ;
 
 COMMENT: ('//' ~[\n]* | '/*' .*? '*/') -> skip;
