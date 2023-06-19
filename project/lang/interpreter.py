@@ -13,7 +13,6 @@ from project.lang.utils import Identifiers, log, Entity, InterpretError
 
 
 class InterpretVisitor(LangVisitor):
-
     def __init__(self, out=None):
         self._ctx_stack = list()
         self._ids = Identifiers()
@@ -67,7 +66,7 @@ class InterpretVisitor(LangVisitor):
     # Visit a parse tree produced by LangParser#lambda.
     def visitLambda(self, ctx: LangParser.LambdaContext):
         key: str = ctx.var().accept(self)
-        fun = lambda : ctx.body.accept(self)
+        fun = lambda: ctx.body.accept(self)
         return Entity((key, fun))
 
     @log
@@ -184,13 +183,13 @@ class InterpretVisitor(LangVisitor):
             raise Exception(f"Type {entity.get_type()} is not valid for info operation")
         graph: EpsilonNFA = entity.get_val()
         match op:
-            case 'starts':
+            case "starts":
                 return Entity(set(graph.start_states))
-            case 'finals':
+            case "finals":
                 return Entity(set(graph.final_states))
-            case 'labels':
+            case "labels":
                 return Entity(set(graph.symbols))
-            case 'edges':
+            case "edges":
                 return Entity(set(graph))
             case _:
                 raise Exception(f"Unexpected operator {op}")
@@ -201,30 +200,31 @@ class InterpretVisitor(LangVisitor):
         entity_1: Entity = ctx.expr()[0].accept(self)
         entity_2: Entity = ctx.expr()[1].accept(self)
 
-        if not isinstance(entity_1.get_val(), set) or not isinstance(entity_2.get_val(), EpsilonNFA):
+        if not isinstance(entity_1.get_val(), set) or not isinstance(
+            entity_2.get_val(), EpsilonNFA
+        ):
             raise Exception(f"Invalid operands")
 
         nodes: set = entity_1.get_val()
         graph: EpsilonNFA = entity_2.get_val().copy()
 
         match op:
-            case 'set final':
+            case "set final":
                 graph.final_states.clear()
                 graph.final_states.update(nodes)
                 return Entity(graph)
-            case 'add final':
+            case "add final":
                 graph.final_states.update(nodes)
                 return Entity(graph)
-            case 'set start':
+            case "set start":
                 graph.start_states.clear()
                 graph.start_states.update(nodes)
                 return Entity(graph)
-            case 'add start':
+            case "add start":
                 graph.start_states.update(nodes)
                 return Entity(graph)
             case _:
                 raise Exception(f"Unexpected operator {op}")
-
 
     @log
     @_stack_deco
@@ -249,4 +249,3 @@ def run_visitor(code, out=None):
         return program.accept(visitor)
     except Exception as e:
         raise InterpretError(e, visitor.ctx)
-

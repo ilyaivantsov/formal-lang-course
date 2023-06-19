@@ -11,6 +11,7 @@ logger = logging.getLogger()
 
 def whoami():
     import sys
+
     return sys._getframe(1).f_code.co_name
 
 
@@ -25,13 +26,15 @@ def log(func):
             result = func(*args, **kwargs)
             return result
         except Exception as e:
-            logger.exception(f"Exception raised in {func.__name__}. exception: {str(e)}")
+            logger.exception(
+                f"Exception raised in {func.__name__}. exception: {str(e)}"
+            )
             raise e
 
     return wrapper
 
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 def ctx_location(ctx: ParserRuleContext) -> str:
@@ -56,7 +59,9 @@ class Entity:
         return self.__entity_val.__str__()
 
     def __and__(self, other):
-        if isinstance(self.get_val(), EpsilonNFA) and isinstance(other.get_val(), EpsilonNFA):
+        if isinstance(self.get_val(), EpsilonNFA) and isinstance(
+            other.get_val(), EpsilonNFA
+        ):
             return self.get_val().get_intersection(other.get_val())
         elif self.get_type() is set and other.get_type() is set:
             return self.get_val() & other.get_val()
@@ -66,7 +71,9 @@ class Entity:
             )
 
     def __or__(self, other):
-        if isinstance(self.get_val(), EpsilonNFA) and isinstance(other.get_val(), EpsilonNFA):
+        if isinstance(self.get_val(), EpsilonNFA) and isinstance(
+            other.get_val(), EpsilonNFA
+        ):
             return self.get_val().union(other.get_val())
         elif self.get_type() is set and other.get_type() is set:
             return self.get_val() | other.get_val()
@@ -76,7 +83,9 @@ class Entity:
             )
 
     def __add__(self, other):
-        if isinstance(self.get_val(), EpsilonNFA) and isinstance(other.get_val(), EpsilonNFA):
+        if isinstance(self.get_val(), EpsilonNFA) and isinstance(
+            other.get_val(), EpsilonNFA
+        ):
             return self.get_val().concatenate(other.get_val())
         elif self.get_type() is str and other.get_type() is str:
             return self.get_val() + other.get_val()
@@ -112,4 +121,4 @@ class Identifiers(UserDict):
             item: Entity = super().__getitem__(key)
             return item
         except KeyError:
-            raise KeyError(f'{key} : identifier not found')
+            raise KeyError(f"{key} : identifier not found")
