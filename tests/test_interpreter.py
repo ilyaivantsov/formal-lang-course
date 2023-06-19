@@ -25,8 +25,23 @@ def test_smoke():
 
 def test_load():
     out = io.StringIO()
-    run_visitor('g := load "bzip"; \n'
-                'print(labels of g); \n'
-                'print(labels of load "bzip"); \n'
-                , out=out)
-    assert out.getvalue().strip() == '{a, d}\n{a, d}'
+    run_visitor('g := set start {1} to load "bzip"; print(starts of g);', out=out)
+    assert out.getvalue().strip() == '{1}'
+
+
+def test_literals():
+    out = io.StringIO()
+    run_visitor('id := "a"; print(id);', out=out)
+    assert out.getvalue().strip() == 'a'
+    out.truncate(0)
+    out.seek(0)
+    run_visitor('id := {1..4}; print(id);', out=out)
+    assert out.getvalue().strip() == '{1, 2, 3}'
+
+
+def test_lambda():
+    out = io.StringIO()
+    run_visitor('s := {1,2,3}; \n'
+                'k := map s by i => i ++ 2; \n'
+                'print(k);', out=out)
+    assert out.getvalue().strip() == '5'

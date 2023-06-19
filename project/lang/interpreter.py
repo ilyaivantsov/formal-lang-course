@@ -1,4 +1,5 @@
 import functools
+from collections.abc import Iterable
 
 from antlr4 import *
 from pyformlang.finite_automaton import EpsilonNFA
@@ -65,12 +66,14 @@ class InterpretVisitor(LangVisitor):
 
     # Visit a parse tree produced by LangParser#lambda.
     def visitLambda(self, ctx: LangParser.LambdaContext):
-        return self.visitChildren(ctx)
+        key: str = ctx.var().accept(self)
+        fun = lambda : ctx.body.accept(self)
+        return Entity((key, fun))
 
     @log
     def visitVar(self, ctx: LangParser.VarContext):
         key: str = ctx.getText()
-        return key
+        return str(key)
 
     @log
     def visitValInt(self, ctx: LangParser.ValIntContext):
@@ -118,7 +121,22 @@ class InterpretVisitor(LangVisitor):
 
     # Visit a parse tree produced by LangParser#MapOrFilterExpr.
     def visitMapOrFilterExpr(self, ctx: LangParser.MapOrFilterExprContext):
-        return self.visitChildren(ctx)
+        op: str = str(ctx.children[0])
+        entity: Entity = ctx.expr().accept(self)
+
+        if not isinstance(entity.get_val(), Iterable):
+            raise Exception(f"Type {entity.get_type()} must be Iterable")
+
+        it: Iterable = entity.get_val()
+        entity_lam: Entity = ctx.lam.accept(self)
+        key, fun = entity_lam.get_val()
+
+        result = None
+        for el in it:
+            self._ids[key] = Entity(el)
+            result = fun()
+
+        return Entity(result)
 
     @log
     def visitValExpr(self, ctx: LangParser.ValExprContext):
@@ -232,6 +250,3 @@ def run_visitor(code, out=None):
     except Exception as e:
         raise InterpretError(e, visitor.ctx)
 
-
-if __name__ == '__main__':
-    run_visitor('g := load "bzip"; h := set start {1,2,3} to g; print(finals of (set final {4,5} to h)));')
