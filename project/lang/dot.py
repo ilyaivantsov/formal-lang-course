@@ -18,7 +18,9 @@ def parse_stream(stream: InputStream):
     return parser
 
 
-def check_program(code: str = None, *, filename: str = None, encoding: str = "utf-8") -> bool:
+def check_program(
+    code: str = None, *, filename: str = None, encoding: str = "utf-8"
+) -> bool:
     parser = parse(code, filename=filename, encoding=encoding)
     parser.removeErrorListeners()
     parser._errHandler = BailErrorStrategy()
@@ -40,7 +42,9 @@ def parse(text: str = None, *, filename: str = None, encoding: str = "utf-8"):
     return parse_stream(stream)
 
 
-def write_to_dot(code: str = None, *, filename: str = None, encoding: str = "utf-8", out=None):
+def write_to_dot(
+    code: str = None, *, filename: str = None, encoding: str = "utf-8", out=None
+):
     """
     Draws specified parsing tree and writes to DOT file with specified filename.
     """
@@ -106,6 +110,6 @@ set := map {1,2,3} by el => el ++ 1;
 print(set);
 """
 
-if __name__ == '__main__':
-    with open('filename.txt', 'w') as f:
+if __name__ == "__main__":
+    with open("filename.txt", "w") as f:
         print(write_to_dot(pr, out=f))
