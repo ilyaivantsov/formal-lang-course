@@ -1,9 +1,10 @@
+import pydot
 from antlr4 import *
 from pydot import *
 
 from project.lang.dist.LangLexer import LangLexer
+from project.lang.dist.LangListener import LangListener
 from project.lang.dist.LangParser import LangParser
-from project.lang.dist.LangVisitor import LangVisitor
 
 
 def parse_stream(stream: InputStream):
@@ -13,36 +14,53 @@ def parse_stream(stream: InputStream):
 
     lexer = LangLexer(stream)
     parser = LangParser(CommonTokenStream(lexer))
-    return parser, parser.getNumberOfSyntaxErrors()
+
+    return parser
+
+
+def check_program(code: str = None, *, filename: str = None, encoding: str = "utf-8") -> bool:
+    parser = parse(code, filename=filename, encoding=encoding)
+    parser.removeErrorListeners()
+    parser._errHandler = BailErrorStrategy()
+
+    try:
+        parser.program()
+        return True
+    except:
+        return False
 
 
 def parse(text: str = None, *, filename: str = None, encoding: str = "utf-8"):
-    if not bool(text) ^ bool(filename):
-        raise ValueError("Only one value text or filename must be defined")
-
     if text is not None:
         stream = InputStream(text)
-    else:
+    elif filename is not None:
         stream = FileStream(filename, encoding=encoding)
-
+    else:
+        stream = StdinStream()
     return parse_stream(stream)
 
 
-def write_to_dot(tree: ParserRuleContext, filename: str):
+def write_to_dot(code: str = None, *, filename: str = None, encoding: str = "utf-8", out=None):
     """
     Draws specified parsing tree and writes to DOT file with specified filename.
     """
+    parser = parse(code, filename=filename, encoding=encoding)
 
-    visitor = DotTreeVisitor()
-    tree.accept(visitor)
+    tree = parser.program()
 
-    visitor.graph.write(filename)
+    dot_listener = DotListener()
+    walker = ParseTreeWalker()
+    walker.walk(dot_listener, tree)
+
+    print(dot_listener.graph, file=out)
 
 
-class DotTreeVisitor(LangVisitor):
+class DotListener(LangListener):
     def __init__(self):
-        self.graph = Dot("Tree")
-        self.__node_id__ = DotTreeVisitor.get(1)
+        self.__graph = Dot("Tree")
+        self.__node_id__ = DotListener.get(1)
+        self.__stack: list[pydot.Node] = []
+        self.__names = LangParser(None).ruleNames
 
     @staticmethod
     def get(init):
@@ -50,125 +68,44 @@ class DotTreeVisitor(LangVisitor):
             yield init
             init += 1
 
-    # Visit a parse tree produced by LangParser#program.
-    def visitProgram(self, ctx: LangParser.ProgramContext):
-        node = Node(next(self.__node_id__), label="program")
-        self.graph.add_node(node)
+    def enterEveryRule(self, ctx: ParserRuleContext):
+        node = pydot.Node(
+            str(next(self.__node_id__)),
+            label=self.__names[ctx.getRuleIndex()],
+            tooltip=ctx.getText(),
+        )
 
-        for i, stmt in enumerate(ctx.statements):
-            child = stmt.accept(self)
+        self.__graph.add_node(node)
 
-            self.graph.add_edge(Edge(node, child, label=str(i)))
+        if len(self.__stack) > 0:
+            self.__graph.add_edge(Edge(self.__stack[-1].get_name(), node.get_name()))
 
-        return node
+        self.__stack.append(node)
+        super().enterEveryRule(ctx)
 
-    # Visit a parse tree produced by LangParser#BindStatement.
-    def visitBindStatement(self, ctx: LangParser.BindStatementContext):
-        node = Node(next(self.__node_id__), label="bind")
-        self.graph.add_node(node)
+    def exitEveryRule(self, ctx: ParserRuleContext):
+        self.__stack.pop()
+        super().exitEveryRule(ctx)
 
-        child = ctx.expr().accept(self)
-        self.graph.add_edge(Edge(node, child, label="expr"))
+    @property
+    def graph(self):
+        return self.__graph
 
-        return node
-
-    # Visit a parse tree produced by LangParser#PrintStatement.
-    def visitPrintStatement(self, ctx: LangParser.PrintStatementContext):
-        node = Node(next(self.__node_id__), label="print")
-        self.graph.add_node(node)
-
-        child = ctx.expr().accept(self)
-        self.graph.add_edge(Edge(node, child, label="expr"))
-
-        return node
-
-    # Visit a parse tree produced by LangParser#lambda.
-    def visitLambda(self, ctx: LangParser.LambdaContext):
-        node = Node(next(self.__node_id__), label=f"{ctx.getText()}")
-        self.graph.add_node(node)
-
-        child = ctx.pat.accept(self)
-        self.graph.add_edge(Edge(node, child, label="pattern"))
-
-        child = ctx.body.accept(self)
-        self.graph.add_edge(Edge(node, child, label="body"))
-
-        return node
-
-    # Visit a parse tree produced by LangParser#var.
-    def visitVar(self, ctx: LangParser.VarContext):
-        node = Node(next(self.__node_id__), label=f"var {ctx.getText()}")
-        self.graph.add_node(node)
-        return node
-
-    # Visit a parse tree produced by LangParser#val.
-    def visitVal(self, ctx: LangParser.ValContext):
-        node = Node(next(self.__node_id__), label=f"val {ctx.getText()}")
-        self.graph.add_node(node)
-        return node
-
-    # Visit a parse tree produced by LangParser#setLiteral.
-    def visitSetLiteral(self, ctx: LangParser.SetLiteralContext):
-        return self.visitChildren(ctx)
-
-    # Visit a parse tree produced by LangParser#setElem.
-    def visitSetElem(self, ctx: LangParser.SetElemContext):
-        return self.visitChildren(ctx)
-
-    # Visit a parse tree produced by LangParser#ConcatExpr.
-    def visitConcatExpr(self, ctx: LangParser.ConcatExprContext):
-        return self.visitChildren(ctx)
-
-    # Visit a parse tree produced by LangParser#MapOrFilterExpr.
-    def visitMapOrFilterExpr(self, ctx: LangParser.MapOrFilterExprContext):
-        node = Node(next(self.__node_id__), label="MapOrFilter")
-        self.graph.add_node(node)
-
-        child = ctx.expr().accept(self)
-        lam = ctx.lam.accept(self)
-        self.graph.add_edge(Edge(node, child, label="expr"))
-        self.graph.add_edge(Edge(node, lam, label="lambda"))
-
-        return node
-
-    # Visit a parse tree produced by LangParser#ValExpr.
-    def visitValExpr(self, ctx: LangParser.ValExprContext):
-        return self.visitChildren(ctx)
-
-    # Visit a parse tree produced by LangParser#IntersectionExpr.
-    def visitIntersectionExpr(self, ctx: LangParser.IntersectionExprContext):
-        return self.visitChildren(ctx)
-
-    # Visit a parse tree produced by LangParser#VarExpr.
-    def visitVarExpr(self, ctx: LangParser.VarExprContext):
-        return self.visitChildren(ctx)
-
-    # Visit a parse tree produced by LangParser#JoinExpr.
-    def visitJoinExpr(self, ctx: LangParser.JoinExprContext):
-        return self.visitChildren(ctx)
-
-    # Visit a parse tree produced by LangParser#ClosurExpr.
-    def visitClosurExpr(self, ctx: LangParser.ClosurExprContext):
-        return self.visitChildren(ctx)
-
-    # Visit a parse tree produced by LangParser#ParenExpr.
-    def visitParenExpr(self, ctx: LangParser.ParenExprContext):
-        return self.visitChildren(ctx)
-
-    # Visit a parse tree produced by LangParser#InfoExpr.
-    def visitInfoExpr(self, ctx: LangParser.InfoExprContext):
-        return self.visitChildren(ctx)
-
-    # Visit a parse tree produced by LangParser#LoadExpr.
-    def visitLoadExpr(self, ctx: LangParser.LoadExprContext):
-        return self.visitChildren(ctx)
+    @graph.getter
+    def graph(self):
+        return self.__graph
 
 
-# pr = """
-# print "a";
-# j := map s by v => v;"""
-#
-# if __name__ == '__main__':
-#     parser, err = parse_stream(InputStream(pr))
-#     write_to_dot(parser.program(), 't')
-#     print(err)
+pr = """
+g1 := load("bitz");
+print(starts of g);
+print(labels of g);
+g2 := add final {1,2,3} to g1;
+print(finals of g2);
+set := map {1,2,3} by el => el ++ 1;
+print(set);
+"""
+
+if __name__ == '__main__':
+    with open('filename.txt', 'w') as f:
+        print(write_to_dot(pr, out=f))

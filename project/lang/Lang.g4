@@ -5,30 +5,39 @@ program: (statements+=statement ';')* EOF;
 
 statement: bind | print;
 
-bind: pattern ':=' expr # BindStatement;
-print: 'print' expr     # PrintStatement;
+bind: var ':=' expr             # BindStatement;
+print: 'print' '(' expr ')'     # PrintStatement;
 
-lambda: pat=pattern '=>' body=expr;
-pattern: var | '(' pattern (',' pattern)* ')';
+lambda: var '=>' body=expr;
 
 var: IDENT;
-val: INT | STRING | setLiteral;
+val:
+    INT               # ValInt
+    | STRING          # ValStr
+    | setLiteral      # ValSet
+    ;
+
 setLiteral:
-	'{' '}' // Empty Set
-	| '{' setElem (',' setElem)* '}'; // Set
-setElem: INT | INT '..' INT;
+	'{' '}'                            # EmptySet
+	| '{' setElem (',' setElem)* '}'   # FillSet
+	;
+
+setElem: INT                           # FillSetInt
+         | INT '..' INT                # FillSetRange
+         ;
 
 expr:
-	'(' expr ')'                                                        # ParenExpr
-	| var                                                               # VarExpr
-	| val                                                               # ValExpr
-    | ('map'|'filter') expr 'by' lam=lambda                             # MapOrFilterExpr
-    | 'load' expr                                                       # LoadExpr
-	| expr '&' expr                                                     # IntersectionExpr
-	| expr '|' expr                                                     # JoinExpr
-	| expr '++' expr                                                    # ConcatExpr
-	| expr '*'                                                          # ClosurExpr
-	| ('starts'| 'finals' | 'labels' | 'edges') 'of' expr               # InfoExpr
+	'(' expr ')'                                                                 # ParenExpr
+	| var                                                                        # VarExpr
+	| val                                                                        # ValExpr
+    | ('map'|'filter') expr 'by' lam=lambda                                      # MapOrFilterExpr
+    | 'load' expr                                                                # LoadExpr
+	| expr '&' expr                                                              # IntersectionExpr
+	| expr '|' expr                                                              # JoinExpr
+	| expr '++' expr                                                             # ConcatExpr
+	| expr '*'                                                                   # ClosurExpr
+	| ('starts' | 'finals' | 'labels' | 'edges') 'of' expr                       # InfoExpr
+	| ('set final' | 'add final' | 'set start' | 'add start') expr 'to' expr     # ModifyExpr
     ;
 
 COMMENT: ('//' ~[\n]* | '/*' .*? '*/') -> skip;
