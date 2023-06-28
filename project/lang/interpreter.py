@@ -156,9 +156,9 @@ class InterpretVisitor(LangVisitor):
         for el in it:
             self._ids[key] = Entity(el)
             res = fun()
-            if op == 'map' and isinstance(res, Entity):
+            if op == "map" and isinstance(res, Entity):
                 result.append(res.get_val())
-            elif op == 'filter' and isinstance(res, bool):
+            elif op == "filter" and isinstance(res, bool):
                 if res:
                     result.append(el)
             else:
@@ -230,7 +230,7 @@ class InterpretVisitor(LangVisitor):
         entity_2: Entity = ctx.expr()[1].accept(self)
 
         if not isinstance(entity_1.get_val(), set) or not isinstance(
-                entity_2.get_val(), EpsilonNFA
+            entity_2.get_val(), EpsilonNFA
         ):
             raise Exception(f"Invalid operands")
 

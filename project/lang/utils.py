@@ -60,7 +60,7 @@ class Entity:
 
     def __and__(self, other):
         if isinstance(self.get_val(), EpsilonNFA) and isinstance(
-                other.get_val(), EpsilonNFA
+            other.get_val(), EpsilonNFA
         ):
             result = self.get_val().get_intersection(other.get_val())
         elif self.get_type() is set and other.get_type() is set:
@@ -73,7 +73,7 @@ class Entity:
 
     def __or__(self, other):
         if isinstance(self.get_val(), EpsilonNFA) and isinstance(
-                other.get_val(), EpsilonNFA
+            other.get_val(), EpsilonNFA
         ):
             result = self.get_val().union(other.get_val())
         elif self.get_type() is set and other.get_type() is set:
@@ -86,7 +86,7 @@ class Entity:
 
     def __add__(self, other):
         if isinstance(self.get_val(), EpsilonNFA) and isinstance(
-                other.get_val(), EpsilonNFA
+            other.get_val(), EpsilonNFA
         ):
             result = self.get_val().concatenate(other.get_val())
         elif self.get_type() is str and other.get_type() is str:
@@ -110,22 +110,38 @@ class Entity:
     def __lt__(self, other):
         if isinstance(other, Entity):
             return self.__entity_val < other.get_val()
-        raise TypeError("Comparison not supported between instances of 'Entity' and '{}'.".format(type(other)))
+        raise TypeError(
+            "Comparison not supported between instances of 'Entity' and '{}'.".format(
+                type(other)
+            )
+        )
 
     def __le__(self, other):
         if isinstance(other, Entity):
             return self.__entity_val <= other.get_val()
-        raise TypeError("Comparison not supported between instances of 'Entity' and '{}'.".format(type(other)))
+        raise TypeError(
+            "Comparison not supported between instances of 'Entity' and '{}'.".format(
+                type(other)
+            )
+        )
 
     def __gt__(self, other):
         if isinstance(other, Entity):
             return self.__entity_val > other.get_val()
-        raise TypeError("Comparison not supported between instances of 'Entity' and '{}'.".format(type(other)))
+        raise TypeError(
+            "Comparison not supported between instances of 'Entity' and '{}'.".format(
+                type(other)
+            )
+        )
 
     def __ge__(self, other):
         if isinstance(other, Entity):
             return self.__entity_val >= other.get_val()
-        raise TypeError("Comparison not supported between instances of 'Entity' and '{}'.".format(type(other)))
+        raise TypeError(
+            "Comparison not supported between instances of 'Entity' and '{}'.".format(
+                type(other)
+            )
+        )
 
 
 class InterpretError(Exception):
