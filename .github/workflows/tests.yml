@@ -6,6 +6,9 @@ on:
   - push
   - pull_request
 
+permissions:
+  contents: read
+
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   tests:
@@ -37,5 +40,8 @@ jobs:
           python -m pip install --upgrade pip wheel setuptools
           python -m pip install -r requirements.txt
           python -m pip list
+      - name: Build ANTLR
+        run: |
+          antlr4 -o project/lang/dist -listener -visitor -Dlanguage=Python3 project/lang/Lang.g4
       - name: Run tests
         run: python ./scripts/run_tests.py
