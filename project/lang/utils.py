@@ -60,41 +60,72 @@ class Entity:
 
     def __and__(self, other):
         if isinstance(self.get_val(), EpsilonNFA) and isinstance(
-            other.get_val(), EpsilonNFA
+                other.get_val(), EpsilonNFA
         ):
-            return self.get_val().get_intersection(other.get_val())
+            result = self.get_val().get_intersection(other.get_val())
         elif self.get_type() is set and other.get_type() is set:
-            return self.get_val() & other.get_val()
+            result = self.get_val() & other.get_val()
         else:
-            raise Exception(
+            raise TypeError(
                 f"Types {self.get_type()} and {other.get_type()} are not valid for {whoami()} operation"
             )
+        return Entity(result)
 
     def __or__(self, other):
         if isinstance(self.get_val(), EpsilonNFA) and isinstance(
-            other.get_val(), EpsilonNFA
+                other.get_val(), EpsilonNFA
         ):
-            return self.get_val().union(other.get_val())
+            result = self.get_val().union(other.get_val())
         elif self.get_type() is set and other.get_type() is set:
-            return self.get_val() | other.get_val()
+            result = self.get_val() | other.get_val()
         else:
-            raise Exception(
+            raise TypeError(
                 f"Types {self.get_type()} and {other.get_type()} are not valid for {whoami()} operation"
             )
+        return Entity(result)
 
     def __add__(self, other):
         if isinstance(self.get_val(), EpsilonNFA) and isinstance(
-            other.get_val(), EpsilonNFA
+                other.get_val(), EpsilonNFA
         ):
-            return self.get_val().concatenate(other.get_val())
+            result = self.get_val().concatenate(other.get_val())
         elif self.get_type() is str and other.get_type() is str:
-            return self.get_val() + other.get_val()
+            result = self.get_val() + other.get_val()
         elif self.get_type() is int and other.get_type() is int:
-            return self.get_val() + other.get_val()
+            result = self.get_val() + other.get_val()
         else:
-            raise Exception(
+            raise TypeError(
                 f"Types {self.get_type()} and {other.get_type()} are not valid for {whoami()} operation"
             )
+        return Entity(result)
+
+    def __eq__(self, other):
+        if isinstance(other, Entity):
+            return self.__entity_val == other.get_val()
+        return False
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __lt__(self, other):
+        if isinstance(other, Entity):
+            return self.__entity_val < other.get_val()
+        raise TypeError("Comparison not supported between instances of 'Entity' and '{}'.".format(type(other)))
+
+    def __le__(self, other):
+        if isinstance(other, Entity):
+            return self.__entity_val <= other.get_val()
+        raise TypeError("Comparison not supported between instances of 'Entity' and '{}'.".format(type(other)))
+
+    def __gt__(self, other):
+        if isinstance(other, Entity):
+            return self.__entity_val > other.get_val()
+        raise TypeError("Comparison not supported between instances of 'Entity' and '{}'.".format(type(other)))
+
+    def __ge__(self, other):
+        if isinstance(other, Entity):
+            return self.__entity_val >= other.get_val()
+        raise TypeError("Comparison not supported between instances of 'Entity' and '{}'.".format(type(other)))
 
 
 class InterpretError(Exception):

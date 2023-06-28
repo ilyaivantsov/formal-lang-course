@@ -36,6 +36,7 @@ expr:
 	| expr '|' expr                                                              # JoinExpr
 	| expr '++' expr                                                             # ConcatExpr
 	| expr '*'                                                                   # ClosurExpr
+	| expr ('=' | '<' | '<=' | '>=' | '>' ) expr                                 # EqExpr
 	| ('starts' | 'finals' | 'labels' | 'edges') 'of' expr                       # InfoExpr
 	| ('set final' | 'add final' | 'set start' | 'add start') expr 'to' expr     # ModifyExpr
     ;

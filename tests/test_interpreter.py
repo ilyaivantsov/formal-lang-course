@@ -38,10 +38,14 @@ def test_literals():
     out.truncate(0)
     out.seek(0)
     run_visitor("id := {1..4}; print(id);", out=out)
-    assert out.getvalue().strip() == "{1, 2, 3}"
+    assert eval(out.getvalue()) == {1, 2, 3}
 
 
 def test_lambda():
     out = io.StringIO()
-    run_visitor("s := {1,2,3}; \n" "k := map s by i => i ++ 2; \n" "print(k);", out=out)
-    assert out.getvalue().strip() == "5"
+    run_visitor("print(map {1..10} by x => x ++ 5);", out=out)
+    assert eval(out.getvalue()) == {6, 7, 8, 9, 10, 11, 12, 13, 14}
+    out.truncate(0)
+    out.seek(0)
+    run_visitor("print(filter {100..105} by x => x >= 102);", out=out)
+    assert eval(out.getvalue()) == {102, 103, 104}
